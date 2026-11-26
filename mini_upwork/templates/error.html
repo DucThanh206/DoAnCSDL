@@ -1,0 +1,1 @@
+{% extends 'base.html' %}{% block title %}Có lỗi xảy ra{% endblock %}{% block content %}<section class="empty-state error-page"><span class="eyebrow">KẾT NỐI GIÁN ĐOẠN</span><h1>Chưa tải được dữ liệu</h1><p>{{ message }}</p><a class="button button-dark" href="{{ url_for('index') }}">Về trang chủ</a></section>{% endblock %}

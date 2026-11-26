@@ -1,63 +1,92 @@
-# MiniUpwork · Flask UI
+# MiniUpwork
 
-Ứng dụng web Flask cho hệ thống freelance marketplace trong `mini_upwork (1).sql`. Backend sử dụng MySQL và giữ các luồng ví, ký quỹ, phí, sổ cái, trạng thái milestone và đánh giá trong trigger/stored procedure của schema.
+Ứng dụng web marketplace freelance dùng Flask, Jinja và MySQL. MySQL lưu dữ liệu và thực thi các quy tắc nghiệp vụ về tài khoản, hợp đồng, milestone, ví, escrow, sổ cái và đánh giá thông qua stored procedure, trigger và view.
 
-## Chạy ứng dụng
+## Yêu cầu
 
-1. Cài MySQL 8.0.16 trở lên, tạo schema bằng cách chạy toàn bộ `database/mini_upwork (1).sql` trong MySQL Workbench hoặc CLI. File này có `DROP DATABASE IF EXISTS mini_upwork`; chỉ chạy khi bạn muốn khởi tạo lại database.
-2. Tạo môi trường Python và cài thư viện:
+- Python 3
+- MySQL 8.0.16 trở lên
+- MySQL command-line client nếu cần nạp dữ liệu hoặc chạy kiểm thử SQL
 
-   ```powershell
-   py -m venv .venv
-   .\.venv\Scripts\Activate.ps1
-   pip install -r requirements.txt
-   ```
+## Cài đặt và chạy
 
-3. Cấu hình các biến môi trường cố định cho tài khoản Windows hiện tại trong PowerShell:
+### 1. Chuẩn bị database
 
-   ```powershell
-   [Environment]::SetEnvironmentVariable("DB_HOST", "127.0.0.1", "User")
-   [Environment]::SetEnvironmentVariable("DB_PORT", "3306", "User")
-   [Environment]::SetEnvironmentVariable("DB_NAME", "mini_upwork", "User")
-   [Environment]::SetEnvironmentVariable("DB_USER", "root", "User")
-   [Environment]::SetEnvironmentVariable("DB_PASSWORD", "your-mysql-password", "User")
-   $secret = py -c "import secrets; print(secrets.token_hex(32))"
-   [Environment]::SetEnvironmentVariable("FLASK_SECRET_KEY", $secret, "User")
-   Remove-Variable secret
-   ```
+Tạo database `mini_upwork` và nạp schema gồm các bảng, trigger, stored procedure và view trước khi chạy ứng dụng. **Schema DDL hiện không có trong checkout này.**
 
-   Thay `your-mysql-password` bằng mật khẩu MySQL của bạn; nếu tài khoản không có mật khẩu, dùng `""`. Các lệnh trên lưu giá trị ở phạm vi người dùng Windows. Chỉ cần chạy cấu hình một lần. Đóng và mở lại terminal (hoặc VS Code) để các biến có hiệu lực; sau đó mỗi lần chạy ứng dụng chỉ cần kích hoạt môi trường ảo và chạy `py app.py`. Không tạo khóa phiên mới ở mỗi lần chạy, vì khi đó các phiên đăng nhập hiện tại sẽ mất hiệu lực. Mật khẩu database và khóa phiên được lưu dưới dạng giá trị môi trường của tài khoản Windows này; không chia sẻ tài khoản Windows và không ghi các giá trị đó vào mã nguồn.
+`database/mini_upwork.sql` chỉ là script nạp dữ liệu mẫu vào schema đã có: script chọn `mini_upwork`, `TRUNCATE` các bảng dữ liệu rồi nạp lại dữ liệu mẫu. Không chạy script này trên database có dữ liệu cần giữ. Từ thư mục gốc dự án, có thể nạp dữ liệu bằng:
 
-4. Khởi động web:
+Trên Windows, từ PowerShell chạy lệnh qua `cmd` để dùng cú pháp chuyển hướng đầu vào:
 
-   ```powershell
-   py app.py
-   ```
+```cmd
+cmd /c "mysql -u root -p < database\mini_upwork.sql"
+```
 
-   Mở `http://127.0.0.1:5000`.
+### 2. Cấu hình môi trường
 
-## Cấu trúc thư mục
+Các giá trị mặc định của ứng dụng là `DB_HOST=127.0.0.1`, `DB_PORT=3306`, `DB_NAME=mini_upwork`, `DB_USER=root` và `DB_PASSWORD` rỗng. Trên Windows, có thể lưu cấu hình cho tài khoản hiện tại bằng PowerShell:
 
-- `mini_upwork/`: mã và tài nguyên Flask
-  - `app.py`: khởi tạo ứng dụng và các route
-  - `templates/`: template Jinja
-  - `static/`: CSS và tài nguyên tĩnh
-- `database/`: schema, seed và test case SQL
-- `scripts/`: script kiểm thử RBAC và đo hiệu năng
-- `docs/`: tài liệu dự án
-- `app.py`: entry point tương thích khi chạy `py app.py`
-- `run.py`: entry point phát triển bổ sung
+```powershell
+[Environment]::SetEnvironmentVariable("DB_HOST", "127.0.0.1", "User")
+[Environment]::SetEnvironmentVariable("DB_PORT", "3306", "User")
+[Environment]::SetEnvironmentVariable("DB_NAME", "mini_upwork", "User")
+[Environment]::SetEnvironmentVariable("DB_USER", "root", "User")
+[Environment]::SetEnvironmentVariable("DB_PASSWORD", "your-mysql-password", "User")
+$secret = py -c "import secrets; print(secrets.token_hex(32))"
+[Environment]::SetEnvironmentVariable("FLASK_SECRET_KEY", $secret, "User")
+Remove-Variable secret
+```
+
+Thay `your-mysql-password` bằng mật khẩu MySQL; nếu tài khoản không có mật khẩu, dùng `""`. Các lệnh trên chỉ cần chạy một lần. Mở terminal mới để các biến có hiệu lực. Giữ nguyên `FLASK_SECRET_KEY` giữa các lần chạy để phiên đăng nhập không bị vô hiệu hóa. Không chia sẻ thông tin đăng nhập hoặc lưu bí mật vào mã nguồn.
+
+### 3. Cài thư viện và khởi động
+
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+py app.py
+```
+
+Mở <http://127.0.0.1:5000>. Có thể dùng `py run.py` làm entry point phát triển thay thế. Đặt `FLASK_DEBUG=1` chỉ trong môi trường phát triển; mặc định debug tắt.
 
 ## Chức năng
 
-- Đăng ký khách hàng/freelancer qua `sp_register_client` và `sp_register_freelancer`; đăng nhập lưu phiên Flask.
-- Khám phá việc, đăng tin, gửi đề xuất và chấp nhận đề xuất để tạo hợp đồng.
-- Tạo milestone và đi qua luồng cấp vốn, bàn giao, nghiệm thu, giải ngân. Trigger MySQL chịu trách nhiệm kiểm tra trạng thái và ghi sổ cái.
-- Tổng quan hợp đồng, ví và giao dịch; đánh giá hai chiều sau khi hoàn tất.
-- Trang quản trị đọc các view đối soát đã khai báo trong schema.
+- Đăng ký và đăng nhập bằng vai trò khách hàng hoặc freelancer; biểu mẫu POST có kiểm tra CSRF.
+- Tìm kiếm công việc, đăng tin, gửi đề xuất và chọn đề xuất để tạo hợp đồng.
+- Freelancer quản lý hồ sơ và kỹ năng; hai bên theo dõi hợp đồng và milestone.
+- Luồng milestone gồm cấp vốn vào escrow, bàn giao, nghiệm thu và giải ngân; trạng thái tài chính và sổ cái được xử lý ở MySQL.
+- Ví hiển thị số dư và lịch sử giao dịch; người dùng có thể đánh giá đối tác sau khi hợp đồng hoàn tất.
+- Tài khoản admin xem báo cáo đối soát ví, sổ cái, escrow và phân loại người dùng.
 
-Nạp/rút tiền qua cổng thanh toán thật chưa nằm trong phạm vi ứng dụng; giao diện chỉ đọc ví và lịch sử. Cần tích hợp adapter thanh toán trước khi cho phép tạo các giao dịch đó.
+Nạp/rút tiền qua cổng thanh toán thật chưa được tích hợp vào giao diện. Các giao dịch nạp/rút chỉ được ghi nhận qua stored procedure sau khi dịch vụ thanh toán xác nhận.
 
-## Cấu hình
+## Kiểm thử database
 
-`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `FLASK_SECRET_KEY` là biến môi trường tùy chọn. Mặc định database là `mini_upwork`, host `127.0.0.1`, port `3306`, user `root`. Không bật `FLASK_DEBUG` ngoài môi trường phát triển.
+Chạy các script sau sau khi đã nạp schema và dữ liệu mẫu:
+
+- Test nghiệp vụ: `mysql -u root -p < database/test_cases.sql` (trên PowerShell: `cmd /c "mysql -u root -p < database\test_cases.sql"`). Các kiểm tra chạy trong transaction và rollback dữ liệu thử nghiệm.
+- Test phân quyền: nạp `database/rbac.sql`, sau đó chạy `bash scripts/rbac_test.sh` trong môi trường có Bash. Script RBAC tạo role và tài khoản demo với mật khẩu mặc định; chỉ dùng để kiểm thử cục bộ, không dùng các thông tin đó khi triển khai thật.
+- `database/perf_seed.sql` và `scripts/perf_run.py` dùng cho benchmark riêng trên Linux; script Python kết nối qua Unix socket và database `mini_upwork_perf`.
+
+## Cấu trúc dự án
+
+- `mini_upwork/app.py`: cấu hình Flask, route và truy vấn database
+- `mini_upwork/templates/`: giao diện Jinja
+- `mini_upwork/static/`: CSS và tài nguyên tĩnh
+- `database/`: dữ liệu mẫu, script RBAC, test nghiệp vụ và dữ liệu benchmark
+- `scripts/`: kiểm thử RBAC và benchmark
+- `app.py`: entry point tương thích
+- `run.py`: entry point phát triển
+
+## Cấu hình môi trường
+
+| Biến | Mặc định | Mục đích |
+| --- | --- | --- |
+| `DB_HOST` | `127.0.0.1` | Máy chủ MySQL |
+| `DB_PORT` | `3306` | Cổng MySQL |
+| `DB_NAME` | `mini_upwork` | Database ứng dụng |
+| `DB_USER` | `root` | Tài khoản kết nối MySQL |
+| `DB_PASSWORD` | rỗng | Mật khẩu MySQL |
+| `FLASK_SECRET_KEY` | Tạo ngẫu nhiên khi khởi động | Khóa ký session; nên đặt cố định |
+| `FLASK_DEBUG` | `0` | Bật debug khi đặt thành `1` trong môi trường phát triển |

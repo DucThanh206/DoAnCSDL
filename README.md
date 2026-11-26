@@ -1,5 +1,18 @@
 # MiniUpwork
 
+Báo cáo Dự án Cơ sở dữ liệu 
+Môn học: INT1313 - Cơ sở dữ liệu 
+Học kỳ : 1, 2026-2027
+Mã dự án & Tên: #3 - Freelance Marketplace Ecosystem (Mini-Upwork)
+    •	Tên nhóm: TTU
+    
+    •	Thành viên: 3
+    1.	Trần Đức Thành (n24dccn166@student.ptithcm.edu.vn)
+    2.	Đoàn Minh Trí (n24dccn175@student.ptithcm.edu.vn)
+    3.	Nguyễn Thành Uy (n24dccn180@student.ptithcm.edu.vn)
+
+    •	Tên đề tài: Freelance Marketplace Ecosystem (Mini-Upwork) — Cơ sở dữ liệu kết nối   khách hàng và freelancer, quản lý hợp đồng, milestone và thanh toán.
+
 Ứng dụng web marketplace freelance dùng Flask, Jinja và MySQL. MySQL lưu dữ liệu và thực thi các quy tắc nghiệp vụ về tài khoản, hợp đồng, milestone, ví, escrow, sổ cái và đánh giá thông qua stored procedure, trigger và view.
 
 ## Yêu cầu
@@ -14,12 +27,12 @@
 
 Tạo database `mini_upwork` và nạp schema gồm các bảng, trigger, stored procedure và view trước khi chạy ứng dụng. **Schema DDL hiện không có trong checkout này.**
 
-`database/mini_upwork.sql` chỉ là script nạp dữ liệu mẫu vào schema đã có: script chọn `mini_upwork`, `TRUNCATE` các bảng dữ liệu rồi nạp lại dữ liệu mẫu. Không chạy script này trên database có dữ liệu cần giữ. Từ thư mục gốc dự án, có thể nạp dữ liệu bằng:
+`database/mini_upwork_datatest.sql` dùng để nạp dữ liệu mẫu vào schema đã có. Script chọn `mini_upwork`, xóa dữ liệu cũ rồi nạp lại dữ liệu mẫu; không chạy trên database có dữ liệu cần giữ. **File này hiện đang rỗng trong checkout**, vì vậy cần đưa các câu lệnh nạp dữ liệu vào file trước khi chạy.
 
 Trên Windows, từ PowerShell chạy lệnh qua `cmd` để dùng cú pháp chuyển hướng đầu vào:
 
 ```cmd
-cmd /c "mysql -u root -p < database\mini_upwork.sql"
+cmd /c "mysql -u root -p < database\mini_upwork_datatest.sql"
 ```
 
 ### 2. Cấu hình môi trường
@@ -47,8 +60,6 @@ py -m venv .venv
 pip install -r requirements.txt
 py app.py
 ```
-
-Mở <http://127.0.0.1:5000>. Có thể dùng `py run.py` làm entry point phát triển thay thế. Đặt `FLASK_DEBUG=1` chỉ trong môi trường phát triển; mặc định debug tắt.
 
 ## Chức năng
 

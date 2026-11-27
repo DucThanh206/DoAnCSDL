@@ -1,1 +1,24 @@
-{% extends 'base.html' %}{% block title %}Khám phá công việc{% endblock %}{% block content %}<div class="page-heading"><div><span class="eyebrow">CƠ HỘI DÀNH CHO BẠN</span><h1>Khám phá công việc</h1><p class="muted">Những dự án mới đang tìm kiếm kỹ năng của bạn.</p></div>{% if user and user.role=='CLIENT' %}<a class="button button-dark" href="{{ url_for('new_job') }}">＋ Đăng việc</a>{% endif %}</div><form class="search-bar" method="get"><span>⌕</span><input name="q" value="{{ term }}" placeholder="Tìm theo tên hoặc mô tả công việc"><button class="button button-dark button-small">Tìm kiếm</button></form><div class="result-caption">{{ jobs|length }} công việc đang mở</div><div class="job-grid">{% for job in jobs %}<article class="job-card"><div class="job-card-top"><span class="tag tag-green">Đang tuyển</span><span class="muted">{{ job.created_at.strftime('%d/%m/%Y') if job.created_at else '' }}</span></div><h3><a href="{{ url_for('job_detail',job_id=job.job_id) }}">{{ job.title }}</a></h3><p class="clamp">{{ job.description }}</p><div class="job-card-meta"><span>◷ {{ job.proposal_count }} đề xuất</span><b>{{ '{:,.0f}'.format(job.budget_min) }} – {{ '{:,.0f}'.format(job.budget_max) }} đ</b></div><div class="client-row"><span class="avatar avatar-small">{{ job.client_name[:1] }}</span>{{ job.client_name }}<a class="arrow-link" href="{{ url_for('job_detail',job_id=job.job_id) }}">↗</a></div></article>{% else %}<div class="empty-state">Không tìm thấy công việc phù hợp.</div>{% endfor %}</div>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Tìm việc{% endblock %}
+{% block content %}
+<h1>Công việc đang mở</h1>
+<form class="row card" method="get">
+  <input name="q" value="{{ term }}" placeholder="Tìm theo tiêu đề hoặc mô tả" style="flex:1">
+  <button>Tìm</button>
+  {% if term %}<a href="{{ url_for('jobs') }}">Xóa lọc</a>{% endif %}
+</form>
+<div class="table-wrap"><table>
+  <thead><tr><th>Công việc</th><th>Khách hàng</th><th class="num">Ngân sách</th><th class="num">Đề xuất chờ</th><th>Ngày đăng</th></tr></thead>
+  <tbody>
+  {% for j in jobs %}
+    <tr><td><a href="{{ url_for('job_detail', job_id=j.job_id) }}">{{ j.title }}</a></td>
+        <td>{{ j.client_name }}</td>
+        <td class="num">{{ j.budget_min|vnd }} – {{ j.budget_max|vnd }}</td>
+        <td class="num">{{ j.proposal_count }}</td>
+        <td>{{ j.created_at.strftime('%d/%m/%Y') if j.created_at else '' }}</td></tr>
+  {% else %}
+    <tr><td colspan="5" class="muted">Không có công việc nào.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

@@ -1,19 +1,48 @@
 <!doctype html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#f6f7f4"><meta name="csrf-token" content="{{ csrf_token }}"><title>{% block title %}MiniUpwork{% endblock %} · MiniUpwork</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}MiniUpwork{% endblock %} · MiniUpwork</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<header class="topbar"><a class="brand" href="{{ url_for('index') }}"><span class="brand-mark">m</span> mini<span>upwork</span></a>
-  <nav class="main-nav"><a href="{{ url_for('jobs') }}">Tìm việc</a><a href="{{ url_for('freelancers') }}">Freelancer</a>
-    {% if user and user.role=='FREELANCER' %}<a href="{{ url_for('profile') }}">Hồ sơ</a>{% endif %}
-    {% if user %}<a href="{{ url_for('contracts') }}">Hợp đồng</a>{% if user.role=='CLIENT' %}<a href="{{ url_for('my_jobs') }}">Tin của tôi</a>{% endif %}<a href="{{ url_for('wallet') }}">Ví</a>{% if user.role=='ADMIN' %}<a href="{{ url_for('admin_reports') }}">Đối soát</a>{% endif %}{% endif %}
-  </nav><div class="nav-account">{% if user %}<a class="user-chip" href="{{ url_for('dashboard') }}"><span class="avatar">{{ user.full_name[:1]|upper }}</span>{{ user.full_name }}</a><form method="post" action="{{ url_for('logout') }}"><button class="button button-quiet button-small">Đăng xuất</button></form>{% else %}<a class="button button-quiet button-small" href="{{ url_for('login') }}">Đăng nhập</a><a class="button button-primary button-small" href="{{ url_for('register') }}">Tham gia</a>{% endif %}</div>
+<header>
+  <div class="bar">
+    <a class="brand" href="{{ url_for('index') }}">MiniUpwork</a>
+    <nav>
+      <a href="{{ url_for('jobs') }}">Tìm việc</a>
+      <a href="{{ url_for('freelancers') }}">Freelancer</a>
+      {% if user %}
+        <a href="{{ url_for('dashboard') }}">Tổng quan</a>
+        {% if user.role == 'CLIENT' %}<a href="{{ url_for('my_jobs') }}">Tin của tôi</a>{% endif %}
+        {% if user.role in ('CLIENT', 'FREELANCER') %}<a href="{{ url_for('contracts') }}">Hợp đồng</a>{% endif %}
+        {% if user.role == 'FREELANCER' %}<a href="{{ url_for('profile') }}">Hồ sơ</a>{% endif %}
+        <a href="{{ url_for('wallet') }}">Ví</a>
+        {% if user.role == 'ADMIN' %}<a href="{{ url_for('admin_reports') }}">Đối soát</a>{% endif %}
+      {% endif %}
+    </nav>
+    <div class="account">
+      {% if user %}
+        <span class="small">{{ user.full_name }} <span class="badge">{{ user.role }}</span></span>
+        <form class="inline" method="post" action="{{ url_for('logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="secondary small">Đăng xuất</button>
+        </form>
+      {% else %}
+        <a href="{{ url_for('login') }}">Đăng nhập</a>
+        <a href="{{ url_for('register') }}">Đăng ký</a>
+      {% endif %}
+    </div>
+  </div>
 </header>
-<main class="page">{% with messages=get_flashed_messages(with_categories=true) %}{% if messages %}<div class="flash-stack">{% for category,message in messages %}<div class="flash flash-{{ category }}">{{ message }}</div>{% endfor %}</div>{% endif %}{% endwith %}{% block content %}{% endblock %}</main>
-<footer class="footer"><span>MiniUpwork</span><span>Kết nối kỹ năng với cơ hội phù hợp.</span></footer>
-<script>const csrf=document.querySelector('meta[name="csrf-token"]').content;document.querySelectorAll('form[method="post"],form[method="POST"]').forEach(form=>{if(!form.querySelector('input[name="csrf_token"]')){const field=document.createElement('input');field.type='hidden';field.name='csrf_token';field.value=csrf;form.append(field)}})</script>
-{% block scripts %}{% endblock %}
-</body></html>
+<main>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="flash flash-{{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

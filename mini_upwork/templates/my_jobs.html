@@ -1,1 +1,23 @@
-{% extends 'base.html' %}{% block title %}Tin tuyển dụng của tôi{% endblock %}{% block content %}<div class="page-heading"><div><span class="eyebrow">KHÁCH HÀNG</span><h1>Tin tuyển dụng của tôi</h1><p class="muted">Theo dõi bài đăng và xem các đề xuất nhận được.</p></div><a class="button button-dark" href="{{ url_for('new_job') }}">＋ Đăng việc</a></div><section class="panel">{% for job in jobs %}<a class="list-row job-list-row" href="{{ url_for('job_detail',job_id=job.job_id) }}"><span class="row-icon">⌕</span><span class="row-main"><b>{{ job.title }}</b><small>{{ job.created_at.strftime('%d/%m/%Y') if job.created_at else '' }} · {{ job.proposal_count }} đề xuất · {{ '{:,.0f}'.format(job.budget_min) }} – {{ '{:,.0f}'.format(job.budget_max) }} đ</small></span><span class="tag {{ 'tag-green' if job.status=='OPEN' else 'tag-gray' }}">{{ job.status }}</span><span class="arrow-link">↗</span></a>{% else %}<div class="empty-state">Chưa có tin tuyển dụng. <a href="{{ url_for('new_job') }}">Đăng tin đầu tiên →</a></div>{% endfor %}</section>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Tin của tôi{% endblock %}
+{% block content %}
+<div class="row between"><h1>Tin của tôi</h1><a class="btn" href="{{ url_for('new_job') }}">+ Đăng tin mới</a></div>
+<div class="table-wrap"><table>
+  <thead><tr><th>Công việc</th><th>Trạng thái</th><th class="num">Ngân sách</th><th class="num">Đề xuất</th><th>Ngày đăng</th><th></th></tr></thead>
+  <tbody>
+  {% for j in jobs %}
+    <tr><td><a href="{{ url_for('job_detail', job_id=j.job_id) }}">{{ j.title }}</a></td>
+        <td><span class="badge {{ j.status }}">{{ j.status }}</span></td>
+        <td class="num">{{ j.budget_min|vnd }} – {{ j.budget_max|vnd }}</td>
+        <td class="num">{{ j.proposal_count }}</td>
+        <td>{{ j.created_at.strftime('%d/%m/%Y') if j.created_at else '' }}</td>
+        <td>{% if j.status == 'OPEN' %}
+          <form class="inline" method="post" action="{{ url_for('cancel_job', job_id=j.job_id) }}" onsubmit="return confirm('Hủy tin này?')">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="danger small">Hủy tin</button>
+          </form>{% endif %}</td></tr>
+  {% else %}
+    <tr><td colspan="6" class="muted">Bạn chưa đăng tin nào.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

@@ -1,1 +1,48 @@
-{% extends 'base.html' %}{% block title %}Hồ sơ freelancer{% endblock %}{% block content %}<div class="page-heading"><div><span class="eyebrow">HỒ SƠ CHUYÊN MÔN</span><h1>Hồ sơ của bạn</h1><p class="muted">Thông tin này hiển thị trong danh sách freelancer công khai.</p></div></div><div class="dashboard-columns profile-columns"><section class="panel"><div class="profile-heading"><span class="avatar avatar-large">{{ freelancer.full_name[:1] }}</span><div><h2>{{ freelancer.full_name }}</h2><small>{{ freelancer.email }}</small></div><span class="tag tag-green">★ {{ '%.2f'|format(freelancer.avg_rating) }} · {{ freelancer.review_count }} đánh giá</span></div><form method="post" class="profile-form"><label>Tiêu đề nghề nghiệp<input name="headline" required maxlength="200" value="{{ freelancer.headline }}"></label><label>Giá theo giờ (VND)<input name="hourly_rate" type="number" min="1" step="1000" required value="{{ freelancer.hourly_rate }}"></label><label>Giới thiệu<textarea name="bio" rows="6" placeholder="Kinh nghiệm và thế mạnh của bạn">{{ freelancer.bio or '' }}</textarea></label><button class="button button-dark">Lưu hồ sơ <span>→</span></button></form></section><section class="panel"><div class="panel-head"><div><h2>Kỹ năng</h2><p class="muted">Thêm kỹ năng và mức độ thành thạo.</p></div></div><div class="profile-skills">{% for skill in skills %}<div class="profile-skill"><span><b>{{ skill.skill_name }}</b><small>{{ skill.category }} · Cấp {{ skill.proficiency_level }}/5</small></span><form method="post" action="{{ url_for('remove_profile_skill',skill_id=skill.skill_id) }}"><button class="icon-button" title="Gỡ kỹ năng" aria-label="Gỡ {{ skill.skill_name }}">×</button></form></div>{% else %}<div class="empty-inline">Chưa thêm kỹ năng nào.</div>{% endfor %}</div><hr><form method="post" action="{{ url_for('add_profile_skill') }}" class="stack-form"><label>Kỹ năng<select name="skill_id" required><option value="">Chọn kỹ năng</option>{% for skill in available_skills %}<option value="{{ skill.skill_id }}">{{ skill.skill_name }} · {{ skill.category }}</option>{% endfor %}</select></label><label>Mức thành thạo<select name="proficiency_level" required><option value="3">3 · Khá</option><option value="1">1 · Cơ bản</option><option value="2">2 · Đang phát triển</option><option value="4">4 · Nâng cao</option><option value="5">5 · Chuyên gia</option></select></label><button class="button button-dark button-wide" {% if not available_skills %}disabled{% endif %}>＋ Thêm kỹ năng</button></form></section></div>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Hồ sơ{% endblock %}
+{% block content %}
+<h1>Hồ sơ freelancer</h1>
+<div class="stats">
+  <div class="stat"><span class="muted small">Email</span><b class="small">{{ freelancer.email }}</b></div>
+  <div class="stat"><span class="muted small">Đánh giá</span><b>{{ freelancer.avg_rating }} ★ ({{ freelancer.review_count }})</b></div>
+  <div class="stat"><span class="muted small">Đã kiếm</span><b>{{ freelancer.total_earned|vnd }}</b></div>
+</div>
+<div class="grid">
+  <div class="card">
+    <h2>Thông tin</h2>
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label for="headline">Tiêu đề</label>
+      <input id="headline" name="headline" maxlength="200" value="{{ freelancer.headline }}" required>
+      <label for="hourly_rate">Giá theo giờ ($)</label>
+      <input id="hourly_rate" name="hourly_rate" type="number" step="0.01" min="0.01" value="{{ freelancer.hourly_rate }}" required>
+      <label for="bio">Giới thiệu</label>
+      <textarea id="bio" name="bio">{{ freelancer.bio or '' }}</textarea>
+      <div class="mt"><button>Lưu</button></div>
+    </form>
+  </div>
+  <div class="card">
+    <h2>Kỹ năng</h2>
+    <table>
+      <thead><tr><th>Kỹ năng</th><th>Nhóm</th><th class="num">Mức</th><th></th></tr></thead>
+      <tbody>
+      {% for s in skills %}
+        <tr><td>{{ s.skill_name }}</td><td class="small">{{ s.category }}</td><td class="num">{{ s.proficiency_level }}/5</td>
+            <td><form class="inline" method="post" action="{{ url_for('remove_profile_skill', skill_id=s.skill_id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="danger small">Gỡ</button></form></td></tr>
+      {% else %}
+        <tr><td colspan="4" class="muted">Chưa có kỹ năng.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% if available_skills %}
+      <form class="row mt" method="post" action="{{ url_for('add_profile_skill') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <select name="skill_id">{% for s in available_skills %}<option value="{{ s.skill_id }}">{{ s.skill_name }} ({{ s.category }})</option>{% endfor %}</select>
+        <select name="proficiency_level">{% for i in range(1, 6) %}<option value="{{ i }}" {% if i == 3 %}selected{% endif %}>Mức {{ i }}</option>{% endfor %}</select>
+        <button>Thêm</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

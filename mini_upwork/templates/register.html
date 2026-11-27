@@ -1,1 +1,51 @@
-{% extends 'base.html' %}{% block title %}Tạo tài khoản{% endblock %}{% block content %}<section class="auth-wrap register-wrap"><div class="auth-aside"><span class="eyebrow">BẮT ĐẦU HÀNH TRÌNH</span><h1>Cùng nhau tạo<br>điều tuyệt vời.</h1><p>Chọn vai trò phù hợp để khám phá những công cụ dành riêng cho bạn.</p><div class="aside-mark">✳</div></div><form class="form-card auth-card" method="post"><span class="eyebrow">TÀI KHOẢN MỚI</span><h2>Tạo tài khoản</h2><label>Bạn tham gia với vai trò<select name="role" id="role" required><option value="CLIENT" {% if request.form.get('role')=='CLIENT' %}selected{% endif %}>Khách hàng</option><option value="FREELANCER" {% if request.form.get('role')=='FREELANCER' %}selected{% endif %}>Freelancer</option></select></label><label>Họ và tên<input name="full_name" required maxlength="100" value="{{ request.form.get('full_name','') }}" placeholder="Nguyễn An"></label><label>Email<input name="email" type="email" required value="{{ request.form.get('email','') }}" placeholder="ban@email.com"></label><label>Mật khẩu<input name="password" type="password" minlength="8" required placeholder="Tối thiểu 8 ký tự"></label><div id="client-fields"><label>Tên công ty <span class="optional">(không bắt buộc)</span><input name="company_name" maxlength="150"></label><label>Lĩnh vực<input name="industry" maxlength="100" placeholder="Ví dụ: Giáo dục"></label></div><div id="freelancer-fields" hidden><label>Tiêu đề nghề nghiệp<input name="headline" maxlength="200" placeholder="Ví dụ: Thiết kế thương hiệu"></label><label>Mức giá theo giờ (VND)<input name="hourly_rate" type="number" min="1" step="1000" placeholder="300000"></label><label>Giới thiệu<textarea name="bio" rows="3" placeholder="Kinh nghiệm và thế mạnh của bạn"></textarea></label></div><button class="button button-dark button-wide">Tạo tài khoản <span>→</span></button><p class="form-foot">Đã có tài khoản? <a href="{{ url_for('login') }}">Đăng nhập</a></p></form></section>{% endblock %}{% block scripts %}<script>const role=document.getElementById('role'),c=document.getElementById('client-fields'),f=document.getElementById('freelancer-fields');function toggle(){const freelancer=role.value==='FREELANCER';c.hidden=freelancer;f.hidden=!freelancer;f.querySelectorAll('input,textarea').forEach(x=>x.required=x.name==='headline'||x.name==='hourly_rate')}role.addEventListener('change',toggle);toggle()</script>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Đăng ký{% endblock %}
+{% block content %}
+<div class="auth card">
+  <h1>Đăng ký</h1>
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label for="role">Vai trò</label>
+    <select id="role" name="role">
+      <option value="CLIENT" {% if form.role == 'CLIENT' %}selected{% endif %}>Khách hàng (CLIENT)</option>
+      <option value="FREELANCER" {% if form.role == 'FREELANCER' %}selected{% endif %}>Freelancer</option>
+    </select>
+    <label for="full_name">Họ tên</label>
+    <input id="full_name" name="full_name" value="{{ form.full_name or '' }}" required>
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" value="{{ form.email or '' }}" required>
+    <label for="password">Mật khẩu (ít nhất 8 ký tự)</label>
+    <input id="password" name="password" type="password" minlength="8" required>
+
+    <div id="client-fields">
+      <label for="company_name">Công ty (không bắt buộc)</label>
+      <input id="company_name" name="company_name" value="{{ form.company_name or '' }}">
+      <label for="industry">Lĩnh vực (không bắt buộc)</label>
+      <input id="industry" name="industry" value="{{ form.industry or '' }}">
+    </div>
+    <div id="freelancer-fields">
+      <label for="headline">Tiêu đề hồ sơ</label>
+      <input id="headline" name="headline" value="{{ form.headline or '' }}">
+      <label for="hourly_rate">Giá theo giờ ($)</label>
+      <input id="hourly_rate" name="hourly_rate" type="number" step="0.01" min="0.01" value="{{ form.hourly_rate or '' }}">
+      <label for="bio">Giới thiệu (không bắt buộc)</label>
+      <textarea id="bio" name="bio">{{ form.bio or '' }}</textarea>
+    </div>
+    <div class="mt"><button>Tạo tài khoản</button></div>
+  </form>
+</div>
+<script>
+  (function () {
+    var role = document.getElementById('role');
+    function sync() {
+      var f = role.value === 'FREELANCER';
+      document.getElementById('client-fields').hidden = f;
+      document.getElementById('freelancer-fields').hidden = !f;
+      document.getElementById('headline').required = f;
+      document.getElementById('hourly_rate').required = f;
+    }
+    role.addEventListener('change', sync);
+    sync();
+  })();
+</script>
+{% endblock %}

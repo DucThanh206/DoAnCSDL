@@ -1,1 +1,28 @@
-{% extends 'base.html' %}{% block title %}Đối soát hệ thống{% endblock %}{% block content %}<div class="page-heading"><div><span class="eyebrow">QUẢN TRỊ</span><h1>Đối soát hệ thống</h1><p class="muted">Các view báo cáo từ schema MiniUpwork.</p></div></div><div class="tab-row">{% for key,label in [('wallet','Ví'),('ledger','Sổ cái'),('escrow','Ký quỹ'),('isa','Phân loại user')] %}<a class="tab {{ 'active' if kind==key else '' }}" href="{{ url_for('admin_reports',view=key) }}">{{ label }}</a>{% endfor %}</div><section class="panel transaction-panel"><div class="table-scroll"><table><thead><tr>{% if rows %}{% for key in rows[0].keys() %}<th>{{ key.replace('_',' ') }}</th>{% endfor %}{% endif %}</tr></thead><tbody>{% for row in rows %}<tr>{% for value in row.values() %}<td>{{ value if value is not none else '—' }}</td>{% endfor %}</tr>{% else %}<tr><td class="table-empty">View chưa có bản ghi sai lệch.</td></tr>{% endfor %}</tbody></table></div></section>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Đối soát{% endblock %}
+{% block content %}
+<h1>Đối soát hệ thống</h1>
+<div class="row card">
+  {% for key, v in views.items() %}
+    {% if key == kind %}<b>{{ v[0] }}</b>{% else %}<a href="{{ url_for('admin_reports', view=key, all='1' if show_all else None) }}">{{ v[0] }}</a>{% endif %}
+    {% if not loop.last %}<span class="muted">|</span>{% endif %}
+  {% endfor %}
+  <span style="flex:1"></span>
+  {% if show_all %}
+    <a href="{{ url_for('admin_reports', view=kind) }}">Chỉ hiện dòng sai lệch</a>
+  {% else %}
+    <a href="{{ url_for('admin_reports', view=kind, all='1') }}">Hiện tất cả (tối đa 200 dòng)</a>
+  {% endif %}
+</div>
+<p class="muted small">View: <code>{{ views[kind][1] }}</code> · {{ 'Tất cả dòng' if show_all else 'Chỉ các dòng sai lệch' }} · {{ rows|length }} dòng</p>
+<div class="table-wrap"><table>
+  {% if rows %}
+    <thead><tr>{% for key in rows[0].keys() %}<th>{{ key }}</th>{% endfor %}</tr></thead>
+    <tbody>
+    {% for row in rows %}<tr>{% for value in row.values() %}<td>{{ value if value is not none else '—' }}</td>{% endfor %}</tr>{% endfor %}
+    </tbody>
+  {% else %}
+    <tbody><tr><td class="muted">{{ 'View không có dữ liệu.' if show_all else 'Không có sai lệch — dữ liệu khớp.' }}</td></tr></tbody>
+  {% endif %}
+</table></div>
+{% endblock %}

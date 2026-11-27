@@ -1,1 +1,52 @@
-{% extends 'base.html' %}{% block title %}Đăng nhập{% endblock %}{% block content %}<section class="auth-wrap"><div class="auth-aside"><span class="eyebrow">CHÀO MỪNG TRỞ LẠI</span><h1>Công việc tốt<br>đang chờ bạn.</h1><p>Tiếp tục hành trình kết nối và cộng tác của bạn.</p><div class="aside-mark">✳</div></div><form class="form-card auth-card" method="post"><span class="eyebrow">TÀI KHOẢN</span><h2>Đăng nhập</h2><label>Email<input name="email" type="email" required autocomplete="email" placeholder="ban@email.com"></label><label>Mật khẩu<input name="password" type="password" required autocomplete="current-password" placeholder="Nhập mật khẩu"></label><button class="button button-dark button-wide">Đăng nhập <span>→</span></button><p class="form-foot">Chưa có tài khoản? <a href="{{ url_for('register') }}">Đăng ký miễn phí</a></p></form></section>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Đăng nhập{% endblock %}
+{% block content %}
+<div class="auth card">
+  <h1>Đăng nhập</h1>
+  <p class="muted small">Với tài khoản trong dữ liệu mẫu, dán nguyên giá trị cột <b>password_hash</b> vào ô mật khẩu.</p>
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" required autofocus>
+    <label for="password">Mật khẩu hoặc password_hash</label>
+    <input id="password" name="password" type="text" autocomplete="off" required>
+    <div class="row between mt">
+      <button>Đăng nhập</button>
+      <a class="small" href="{{ url_for('register') }}">Chưa có tài khoản? Đăng ký</a>
+    </div>
+  </form>
+</div>
+
+{% if demo_accounts %}
+<div class="card">
+  <h2>Tài khoản mẫu</h2>
+  <p class="muted small">Bấm "Dùng" để điền sẵn email và password_hash, rồi bấm Đăng nhập.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Vai trò</th><th>Họ tên</th><th>Email</th><th>password_hash</th><th></th></tr></thead>
+      <tbody>
+      {% for a in demo_accounts %}
+        <tr>
+          <td><span class="badge">{{ a.role }}</span></td>
+          <td>{{ a.full_name }}</td>
+          <td>{{ a.email }}</td>
+          <td class="mono">{{ a.password_hash }}</td>
+          <td><button type="button" class="secondary small use-account"
+                      data-email="{{ a.email }}" data-password="{{ a.password_hash }}">Dùng</button></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<script>
+  document.querySelectorAll('.use-account').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.getElementById('email').value = b.dataset.email;
+      document.getElementById('password').value = b.dataset.password;
+      window.scrollTo(0, 0);
+    });
+  });
+</script>
+{% endif %}
+{% endblock %}

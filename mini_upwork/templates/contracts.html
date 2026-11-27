@@ -1,1 +1,20 @@
-{% extends 'base.html' %}{% block title %}Hợp đồng{% endblock %}{% block content %}<div class="page-heading"><div><span class="eyebrow">CỘNG TÁC</span><h1>Hợp đồng</h1><p class="muted">Theo dõi tiến độ và các giai đoạn bàn giao.</p></div></div><section class="panel">{% for c in contracts %}<a class="list-row job-list-row" href="{{ url_for('contract_detail',contract_id=c.contract_id) }}"><span class="row-icon row-icon-lilac">⌘</span><span class="row-main"><b>{{ c.title }}</b><small>{{ c.client_name }} ↔ {{ c.freelancer_name }} · {{ '{:,.0f}'.format(c.total_amount) }} đ</small></span><span class="tag {{ 'tag-green' if c.status=='ACTIVE' else 'tag-gray' }}">{{ c.status }}</span><span class="arrow-link">↗</span></a>{% else %}<div class="empty-state">Bạn chưa có hợp đồng nào.</div>{% endfor %}</section>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Hợp đồng{% endblock %}
+{% block content %}
+<h1>Hợp đồng của tôi</h1>
+<div class="table-wrap"><table>
+  <thead><tr><th>#</th><th>Công việc</th><th>Khách hàng</th><th>Freelancer</th><th class="num">Giá trị</th><th>Bắt đầu</th><th>Trạng thái</th></tr></thead>
+  <tbody>
+  {% for c in contracts %}
+    <tr><td>{{ c.contract_id }}</td>
+        <td><a href="{{ url_for('contract_detail', contract_id=c.contract_id) }}">{{ c.title }}</a></td>
+        <td>{{ c.client_name }}</td><td>{{ c.freelancer_name }}</td>
+        <td class="num">{{ c.total_amount|vnd }}</td>
+        <td>{{ c.start_date.strftime('%d/%m/%Y') if c.start_date else '' }}</td>
+        <td><span class="badge {{ c.status }}">{{ c.status }}</span></td></tr>
+  {% else %}
+    <tr><td colspan="7" class="muted">Chưa có hợp đồng.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}
